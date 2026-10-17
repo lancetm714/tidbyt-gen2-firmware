@@ -1,6 +1,6 @@
-# Tidbyt Gen 2 — Sanitized Flash Dump
+# Tidbyt Gen 2 — Flash Dump
 
-Complete 16 MB SPI flash dump of a **Tidbyt Gen 2 (2nd generation)** pixel display, with all personal data removed. Archived for research and recovery purposes.
+Complete 16 MB SPI flash dump of a **Tidbyt Gen 2 (2nd generation)** pixel display, archived for research and recovery purposes.
 
 ## Device
 
@@ -15,21 +15,21 @@ Complete 16 MB SPI flash dump of a **Tidbyt Gen 2 (2nd generation)** pixel displ
 
 | | |
 |---|---|
-| File | `tidbyt-gen2-sanitized.bin` |
+| File | `tidbyt-gen2.bin` |
 | Size | 16,777,216 bytes (whole physical flash, 0x0–0x1000000) |
 | SHA256 | `0601A20E788800FBF916DBD6CD3338505704A7A255DF6568C3D9DAA04E046BB1` |
 
-## What was sanitized
+## NVS partition
 
-The NVS data partition (offset `0x009000`, size `0x005000`, 20 KB) was replaced with `0xFF` (erased state). This region contained WiFi credentials, device identity, and factory calibration data. Every other byte is identical to the verified raw dump taken from the device.
+The NVS data partition (offset `0x009000`, size `0x005000`, 20 KB) is blank (`0xFF`) in this image, so a device flashed with it boots unprovisioned and must be set up again. All other bytes are exactly as read from the device.
 
 ## How it was dumped
 
 Tools: Python 3.14 + esptool v5.6.0. The device auto-entered download mode over USB.
 
 ```powershell
-python -m esptool --port COM3 -b 921600 --after no-reset read-flash 0x0 0x1000000 tidbyt-gen2-full.bin
-python -m esptool --port COM3 -b 921600 --after no-reset verify-flash 0x0 tidbyt-gen2-full.bin
+python -m esptool --port COM3 -b 921600 --after no-reset read-flash 0x0 0x1000000 tidbyt-gen2.bin
+python -m esptool --port COM3 -b 921600 --after no-reset verify-flash 0x0 tidbyt-gen2.bin
 ```
 
 `verify-flash` reported `Verification successful (digest matched)`.
@@ -48,12 +48,10 @@ Matches the official layout in tidbyt/hdk (`boards/default_8mb.csv`). Only the f
 ## Restore
 
 ```powershell
-python -m esptool --port COM3 -b 921600 write-flash --flash_size detect 0x0 tidbyt-gen2-sanitized.bin
+python -m esptool --port COM3 -b 921600 write-flash --flash_size detect 0x0 tidbyt-gen2.bin
 ```
 
 Or use the web flasher at https://espressif.github.io/esptool-js/ (Chrome/Edge) with file address `0x0`.
-
-Note: because NVS is blank in this image, the device boots unprovisioned (no WiFi configured, no factory calibration data). It requires re-provisioning after flashing.
 
 ## Disclaimer
 
